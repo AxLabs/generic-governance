@@ -1,0 +1,92 @@
+package com.axlabs.governance;
+
+import io.neow3j.devpack.ByteString;
+import io.neow3j.devpack.Contract;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Runtime;
+import io.neow3j.devpack.Storage;
+import io.neow3j.devpack.StorageContext;
+import io.neow3j.devpack.StorageMap;
+import io.neow3j.devpack.annotations.DisplayName;
+import io.neow3j.devpack.annotations.ManifestExtra;
+import io.neow3j.devpack.annotations.OnDeployment;
+import io.neow3j.devpack.annotations.Permission;
+import io.neow3j.devpack.annotations.Safe;
+import io.neow3j.devpack.constants.CallFlags;
+import io.neow3j.devpack.contracts.ContractManagement;
+import io.neow3j.devpack.contracts.CryptoLib;
+import io.neow3j.devpack.contracts.LedgerContract;
+import io.neow3j.devpack.contracts.StdLib;
+
+import static io.neow3j.devpack.Runtime.checkWitness;
+import static io.neow3j.devpack.contracts.StdLib.deserialize;
+import static io.neow3j.devpack.contracts.StdLib.serialize;
+
+@Permission(contract = "*", methods = "*")
+@DisplayName("Generic Governance")
+@ManifestExtra(key = "author", value = "AxLabs")
+public class GenericGov {
+
+    static StorageContext ctx = Storage.getStorageContext();
+    static final StorageMap proposals = ctx.createMap(0);
+    static final StorageMap members = ctx.createMap(1);
+
+    @OnDeployment
+    public static void deploy(Object data, boolean update) {
+        if (!update) {
+            int idx = LedgerContract.currentIndex();
+            for (Hash160 m : (Hash160[]) data) {
+                members.put(m.toByteString(), idx);
+            }
+        }
+    }
+
+    public static ByteString createProposal(Hash160 proposer, Intent[] intents, String discUrl) {
+        assert Runtime.checkWitness(proposer) : "Not authorised";
+        ByteString proposalHash = hashProposal(intents, discUrl);
+        proposals.put(proposalHash, StdLib.serialize(new Proposal(proposalHash, proposer)));
+        return proposalHash;
+    }
+
+    public static ByteString hashProposal(Intent[] intents, String discUrl) {
+        return CryptoLib.sha256(serialize(intents).concat(discUrl));
+    }
+
+    public static void vote(ByteString proposalHash, boolean vote, Hash160 voter) {
+        assert members.get(voter.toByteString()) != null && checkWitness(voter) : "not authorised";
+        Proposal proposal = (Proposal) deserialize(proposals.get(proposalHash));
+        if (vote) {
+            proposal.yesVotes++;
+        } else {
+            proposal.noVotes++;
+        }
+        proposals.put(proposalHash, serialize(proposal));
+    }
+
+    @Safe
+    public static Proposal getProposal(ByteString proposalHash) {
+        return (Proposal) StdLib.deserialize(proposals.get(proposalHash));
+    }
+
+    public static Object[] execute(Intent[] intents, String discUrl) {
+        ByteString proposalHash = hashProposal(intents, discUrl);
+        Proposal proposal = (Proposal) deserialize(proposals.get(proposalHash));
+        int voteCount = proposal.yesVotes + proposal.noVotes;
+        assert proposal.yesVotes * 100 / voteCount >= 50 : "Proposal rejected";
+
+        Object[] returnVals = new Object[intents.length];
+        for (int i = 0; i < intents.length; i++) {
+            Intent t = intents[i];
+            returnVals[i] = Contract.call(t.targetContract, t.targetMethod, CallFlags.All,
+                    t.methodParams);
+        }
+        return returnVals;
+    }
+
+    public static void update(ByteString nef, String manifest) {
+        assert Runtime.getCallingScriptHash() == Runtime.getExecutingScriptHash() :
+                "Not authorised";
+        ContractManagement.update(nef, manifest);
+    }
+
+}
