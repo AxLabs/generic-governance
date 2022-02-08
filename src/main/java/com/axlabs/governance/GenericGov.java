@@ -28,8 +28,8 @@ import static io.neow3j.devpack.contracts.StdLib.serialize;
 public class GenericGov {
 
     static StorageContext ctx = Storage.getStorageContext();
-    static final StorageMap proposals = ctx.createMap(0);
-    static final StorageMap members = ctx.createMap(1);
+    static final StorageMap proposals = new StorageMap(ctx, "proposals");
+    static final StorageMap members = new StorageMap(ctx, "members");
 
     @OnDeployment
     public static void deploy(Object data, boolean update) {

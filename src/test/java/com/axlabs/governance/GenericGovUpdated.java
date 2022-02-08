@@ -7,9 +7,9 @@ import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.events.Event1Arg;
 
 @Permission(contract = "*", methods = "*")
-@DisplayName("Generic Governance v2")
+@DisplayName("Generic Governance")
 @ManifestExtra(key = "author", value = "AxLabs")
-public class GenericGovV2 {
+public class GenericGovUpdated {
 
     static Event1Arg<String> updated;
 

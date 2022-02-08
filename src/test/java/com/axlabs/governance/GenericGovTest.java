@@ -19,7 +19,10 @@ import io.neow3j.types.Hash256;
 import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.math.BigInteger;
@@ -32,6 +35,7 @@ import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.string;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ContractTest(blockTime = 1,
         contracts = {GenericGov.class, GenericGovTreasury.class},
         configFile = "default.neo-express",
@@ -177,11 +181,12 @@ public class GenericGovTest {
         System.out.println(charlie.getNep17Balances(neow3j));
     }
 
+    @Order(Order.DEFAULT + 1) // Execute this test last.
     @Test
     public void update_gov() throws Throwable {
         // Define proposal
         ContractParameter proposer = hash160(charlie);
-        CompilationUnit res = new Compiler().compile(GenericGovV2.class.getCanonicalName());
+        CompilationUnit res = new Compiler().compile(GenericGovUpdated.class.getCanonicalName());
         ObjectMapper mapper = new ObjectMapper();
         String manifestString = mapper.writeValueAsString(res.getManifest());
         ContractParameter intent = array(
