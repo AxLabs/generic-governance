@@ -35,10 +35,8 @@ public class GenericGovTreasury {
     }
 
     public static boolean releaseFunds(Hash160 token, Hash160 receiver, int amount) {
-        assert Runtime.getCallingScriptHash().toByteString() == Storage.get(ctx, OWNER_KEY) :
-                "Not authorised";
-        Object[] params = new Object[]{Runtime.getExecutingScriptHash(), receiver, amount,
-                new Object[]{}};
+        assert Runtime.getCallingScriptHash().toByteString() == Storage.get(ctx, OWNER_KEY);
+        Object[] params = new Object[] {Runtime.getExecutingScriptHash(), receiver, amount, new Object[] {}};
         return (boolean) Contract.call(token, "transfer", CallFlags.All, params);
     }
 }
