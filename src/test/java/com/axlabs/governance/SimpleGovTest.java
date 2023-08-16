@@ -37,11 +37,11 @@ import static io.neow3j.types.ContractParameter.string;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ContractTest(blockTime = 1,
-        contracts = {GenericGov.class, GenericGovTreasury.class},
+        contracts = {SimpleGov.class, SimpleTreasury.class},
         configFile = "default.neo-express",
         batchFile = "init.batch"
 )
-public class GenericGovTest {
+public class SimpleGovTest {
 
     private static final String ALICE = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP";
     private static final String BOB = "NZpsgXn9VQQoLexpuXJsrX8BsoyAhKUyiX";
@@ -57,7 +57,7 @@ public class GenericGovTest {
     private static Account bob;
     private static Account charlie;
 
-    @DeployConfig(GenericGov.class)
+    @DeployConfig(SimpleGov.class)
     public static DeployConfiguration config1() {
         DeployConfiguration c = new DeployConfiguration();
         c.setDeployParam(array(
@@ -67,10 +67,10 @@ public class GenericGovTest {
         return c;
     }
 
-    @DeployConfig(GenericGovTreasury.class)
+    @DeployConfig(SimpleTreasury.class)
     public static DeployConfiguration config2(DeployContext ctx) {
         DeployConfiguration c = new DeployConfiguration();
-        SmartContract gov = ctx.getDeployedContract(GenericGov.class);
+        SmartContract gov = ctx.getDeployedContract(SimpleGov.class);
         c.setDeployParam(hash160(gov.getScriptHash()));
         return c;
     }
@@ -78,8 +78,8 @@ public class GenericGovTest {
     @BeforeAll
     public static void setUp() throws Exception {
         neow3j = ext.getNeow3j();
-        gov = ext.getDeployedContract(GenericGov.class);
-        treasury = ext.getDeployedContract(GenericGovTreasury.class);
+        gov = ext.getDeployedContract(SimpleGov.class);
+        treasury = ext.getDeployedContract(SimpleTreasury.class);
         alice = ext.getAccount(ALICE);
         bob = ext.getAccount(BOB);
         charlie = ext.getAccount(CHARLIE);
@@ -186,7 +186,7 @@ public class GenericGovTest {
     public void update_gov() throws Throwable {
         // Define proposal
         ContractParameter proposer = hash160(charlie);
-        CompilationUnit res = new Compiler().compile(GenericGovUpdated.class.getCanonicalName());
+        CompilationUnit res = new Compiler().compile(SimpleGovUpdated.class.getCanonicalName());
         ObjectMapper mapper = new ObjectMapper();
         String manifestString = mapper.writeValueAsString(res.getManifest());
         ContractParameter intent = array(

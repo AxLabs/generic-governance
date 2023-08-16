@@ -21,11 +21,11 @@ import io.neow3j.devpack.contracts.StdLib;
 import static io.neow3j.devpack.Runtime.checkWitness;
 
 @Permission(contract = "*", methods = "*")
-@DisplayName("Generic Governance")
+@DisplayName("Simple Governance")
 @ManifestExtra(key = "author", value = "AxLabs")
-public class GenericGov {
+public class SimpleGov {
 
-    static StorageContext ctx = Storage.getStorageContext();
+    static final StorageContext ctx = Storage.getStorageContext();
     static final StorageMap proposals = new StorageMap(ctx, "proposals");
     static final StorageMap members = new StorageMap(ctx, "members");
 

@@ -27,5 +27,5 @@ tasks.withType(Test) {
 }
 
 neow3jCompiler {
-    className = "com.axlabs.governance.GenericGov"
+    className = "com.axlabs.governance.SimpleGov"
 }

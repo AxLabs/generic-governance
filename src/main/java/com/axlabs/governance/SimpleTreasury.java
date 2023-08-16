@@ -13,7 +13,7 @@ import io.neow3j.devpack.constants.CallFlags;
 import io.neow3j.devpack.events.Event3Args;
 
 @Permission(contract = "*", methods = "*")
-public class GenericGovTreasury {
+public class SimpleTreasury {
 
     static final String OWNER_KEY = "owner";
 
